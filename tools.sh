@@ -28,9 +28,7 @@ echo "kerbrute installation completed."
 
 # Install windapsearch
 echo "Installing windapsearch..."
-git clone https://github.com/ropnop/windapsearch.git
-cd windapsearch
-pip3 install -r requirements.txt
+wget "https://github.com/ropnop/go-windapsearch/releases/download/v0.3.0/windapsearch-linux-amd64"
 echo "windapsearch installation completed."
 
 # Install impacket

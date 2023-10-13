@@ -17,7 +17,7 @@ echo "Using windapsearch to get usernames from LDAP"
 WINDAPSEARCH="./tools/windapsearch-linux-amd64"
 
 # Run windapsearch based on the domain_name variable
-$WINDAPSEARCH -d "$domain_name" -m users --filter | grep -o 'userPrincipalName: [^ ]*' | cut -d ' ' -f 2 > $domain_name-users.txt
+$WINDAPSEARCH -d "$domain_name" -m users --filter | grep -o 'userPrincipalName: [^ ]*' | cut -d ' ' -f 2 > $domain_name-Users.txt
 echo "Usernames will be saved in a text file."
 
 # Color codes

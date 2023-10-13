@@ -36,7 +36,8 @@ if [ "$answer" == "y" ] || [ "$answer" == "Y" ]; then
     # Proceed with kerberoasting
     echo "Proceeding with kerberoasting..."
     read -p "Enter domain IP address: " domain_ip
-    ./tools/kerbrute_linux_amd64 userenum "$domain_name-Users.txt" --dc "$domain_ip" -d "$domain_name"
+    KERBRUTE="./tools/kerbrute_linux_amd64"
+    $KERBRUTE "$domain_name-Users.txt" --dc "$domain_ip" -d "$domain_name"
 elif [ "$answer" == "n" ] || [ "$answer" == "N" ]; then
     # User chose not to proceed
     echo "Kerberoasting canceled."

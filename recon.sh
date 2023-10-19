@@ -23,10 +23,13 @@ echo "Scanning $target_ip with Nmap..."
 nmap -A -T4 -Pn -p- -oN nmap_scan_results.txt $target_ip
 
 # Extract the domain name from the Nmap results, preserving case
-domain_name=$(grep -oP -m 1 "Domain: \K[^,]+" nmap_scan_results.txt)
+domain_name=$(grep -oP -m 1 "Domain: \K[^,]+" nmap_scan_results.txt | tr -d '[:digit:]' | tr '[:upper:]' '[:lower:]' | sed 's/\.$//')
+
 
 echo "Nmap scan completed. Results are saved in 'nmap_scan_results.txt'."
 echo "Domain name (dname): $domain_name"
+
+echo "$target_ip $domain_name" >> /etc/hosts
 
 echo "Using windapsearch to get usernames from LDAP"
 
@@ -63,5 +66,3 @@ else
     # Handle invalid input
     echo "Invalid input. Please enter 'y' to proceed or 'n' to cancel."
 fi
-
-

